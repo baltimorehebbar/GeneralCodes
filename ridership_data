@@ -1,0 +1,36 @@
+
+"""
+Created on Tue Jul 16 11:08:09 2019
+
+@filename: ridership_data.py
+@version: 0.1
+@date: 2019-07-18
+@author: Sachin Hebbar
+@email: sachin@sachinhebbar.com
+@license: MIT
+@affiliation: Baltimore Transit Equity Coalition moretransitequity.com
+
+"""
+
+import pandas as pd
+df_json = pd.read_json('https://opendata.arcgis.com/datasets/cf30fef14ac44aad92c135f6fc8adfbe_10.geojson')
+
+from pandas.io.json import json_normalize
+data = json_normalize(df_json['features'])
+data.columns = ['coordinates', 'coordinatetype', 'county', 'policy', 'mode', \
+                'objectid', 'rider_off', 'rider_on', 'rider_total', 'routes_served',\
+                'shelter', 'stop_ridership_rank', 'stop_id', 'stop_name', 'type']
+
+from datetime import date, timedelta
+ridership_date = date.today() - timedelta(days=1)
+data['ridership_date'] = ridership_date
+
+data['lat'] = data['coordinates'].str[1]
+data['lon'] = data['coordinates'].str[0]
+
+data.drop(columns=['coordinates', 'coordinatetype', 'policy', 'type'], inplace=True)
+
+data = data[['ridership_date', 'lat', 'lon', 'county', 'mode', 'stop_id', 'stop_name',\
+             'shelter', 'rider_on', 'rider_off', 'rider_total','routes_served', 'stop_ridership_rank']]
+
+data.to_csv("C:/Users/shebbar3/Desktop/Ridership.csv", index=False)
